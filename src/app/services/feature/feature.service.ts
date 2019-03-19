@@ -9,7 +9,6 @@ export class FeatureService {
   constructor(private httpClient: HttpClient) {}
 
   getSomething() {
-    console.log(this.getHttpClient());
     this.getHttpClient()
       .get('dsa')
       .subscribe();
