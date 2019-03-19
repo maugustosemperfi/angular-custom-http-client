@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { FeatureService } from './services/feature/feature.service';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +8,8 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'angular-custom-http-client';
+
+  constructor(private service: FeatureService) {
+    this.service.getSomething();
+  }
 }

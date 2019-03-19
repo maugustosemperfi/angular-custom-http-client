@@ -6,26 +6,32 @@ import { AuthorizationInterceptor } from './interceptors/authorization.intercept
 import { LoaderInterceptor } from './interceptors/loader.interceptor';
 import { SSOPrefixInterceptor } from './interceptors/sso.interceptor';
 
-export interface HttpClient {
-  /**
-   * Write custom methods to make an action at the request
-   * Ex: disableLoadInterceptor(): HttpClient
-   */
+// HttpClient is declared in a re-exported module, so we have to extend the original module to make it work properly
+// (see https://github.com/Microsoft/TypeScript/issues/13897)
+declare module '@angular/common/http/src/client' {
+  export interface HttpClient {
+    /**
+     * Write custom methods to make an action at the request
+     * Ex: disableLoadInterceptor(): HttpClient
+     */
 
-  /**
-   * Disable ApiPrefixInterceptor for THIS request only
-   */
-  disableApiPrefix(): HttpClient;
+    /**
+     * Disable ApiPrefixInterceptor for THIS request only
+     */
+    disableApiPrefix(): HttpClient;
 
-  /**
-   * Enable SSOInterceptor for THIS request only
-   */
-  enableSSOInterceptor(): HttpClient;
+    /**
+     * Enable SSOInterceptor for THIS request only
+     */
+    enableSSOInterceptor(): HttpClient;
 
-  /**
-   * Disable LoaderInterceptor for THIS request only
-   */
-  disableLoaderInterceptor(): HttpClient;
+    /**
+     * Disable LoaderInterceptor for THIS request only
+     */
+    disableLoaderInterceptor(): HttpClient;
+
+    setControllerUrl(url): HttpClient;
+  }
 }
 
 class HttpInterceptorHandler implements HttpHandler {
@@ -51,6 +57,8 @@ export const HTTP_INTERCEPTORS = new InjectionToken<HttpInterceptor>('HTTP_INTER
 
 @Injectable()
 export class HttpService extends HttpClient {
+  private url;
+
   constructor(
     private httpHandler: HttpHandler,
     private injector: Injector,
@@ -84,6 +92,11 @@ export class HttpService extends HttpClient {
     return this.removeInterceptor(LoaderInterceptor);
   }
 
+  setControllerUrl(url): HttpClient {
+    this.url = url;
+    return this;
+  }
+
   // Override the original method to wire interceptors when triggering the request.
   request(method?: any, url?: any, options?: any): any {
     const interceptors = [...this.dynamicInterceptors, ...this.interceptors];
@@ -92,15 +105,21 @@ export class HttpService extends HttpClient {
   }
 
   private removeInterceptor(interceptorType: Function): HttpService {
-    return new HttpService(
+    const http = new HttpService(
       this.httpHandler,
       this.injector,
       this.dynamicInterceptors.filter(i => !(i instanceof interceptorType)),
       this.interceptors
     );
+
+    http.setControllerUrl(this.url);
+    return http;
   }
 
   private addInterceptor(interceptor: HttpInterceptor): HttpService {
-    return new HttpService(this.httpHandler, this.injector, this.dynamicInterceptors.concat([interceptor]), this.interceptors);
+    const http = new HttpService(this.httpHandler, this.injector, this.dynamicInterceptors.concat([interceptor]), this.interceptors);
+
+    http.setControllerUrl(this.url);
+    return http;
   }
 }
