@@ -57,7 +57,7 @@ export const HTTP_INTERCEPTORS = new InjectionToken<HttpInterceptor>('HTTP_INTER
 
 @Injectable()
 export class HttpService extends HttpClient {
-  private url;
+  private url = '';
 
   constructor(
     private httpHandler: HttpHandler,

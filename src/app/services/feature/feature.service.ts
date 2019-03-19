@@ -5,13 +5,17 @@ import { HttpService } from '../httt-serivce.decorator';
 @Injectable()
 @HttpService('custom-controller')
 export class FeatureService {
-  [x: string]: any;
 
   constructor(private httpClient: HttpClient) {}
 
   getSomething() {
+    console.log(this.getHttpClient());
     this.getHttpClient()
-        .get('dsa')
-        .subscribe()
+      .get('dsa')
+      .subscribe();
+  }
+
+  private getHttpClient(): HttpClient {
+    return;
   }
 }
