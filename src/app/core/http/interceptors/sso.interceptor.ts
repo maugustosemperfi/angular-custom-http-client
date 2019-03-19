@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
  * With this custom httpclient, you can disable the api and enable the sso interceptor for one request
  */
 @Injectable()
-export class ControlAcessoSSOPrefixInterceptor implements HttpInterceptor {
+export class SSOPrefixInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler) {
     req = req.clone({ url: 'http://your.sso.url/some-controller/' + req.url });
     return next.handle(req);

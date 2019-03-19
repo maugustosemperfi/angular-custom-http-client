@@ -1,12 +1,31 @@
 import { HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Inject, Injectable, InjectionToken, Injector, Optional } from '@angular/core';
 import { Observable } from 'rxjs';
+import { ApiPrefixInterceptor } from './interceptors/api-prefix.interceptors';
+import { AuthorizationInterceptor } from './interceptors/authorization.interceptor';
+import { LoaderInterceptor } from './interceptors/loader.interceptor';
+import { SSOPrefixInterceptor } from './interceptors/sso.interceptor';
 
 export interface HttpClient {
   /**
    * Write custom methods to make an action at the request
    * Ex: disableLoadInterceptor(): HttpClient
    */
+
+  /**
+   * Disable ApiPrefixInterceptor for THIS request only
+   */
+  disableApiPrefix(): HttpClient;
+
+  /**
+   * Enable SSOInterceptor for THIS request only
+   */
+  enableSSOInterceptor(): HttpClient;
+
+  /**
+   * Disable LoaderInterceptor for THIS request only
+   */
+  disableLoaderInterceptor(): HttpClient;
 }
 
 class HttpInterceptorHandler implements HttpHandler {
@@ -43,14 +62,26 @@ export class HttpService extends HttpClient {
     if (!this.dynamicInterceptors) {
       // Configure default dynamicInterceptors that can be disabled here
       this.dynamicInterceptors = [
-        // this.injector.get(ApiPrefixInterceptor),
-        // this.injector.get(AuthorizationInterceptor),
-        // this.injector.get(LoadingInterceptor)
+        this.injector.get(ApiPrefixInterceptor),
+        this.injector.get(AuthorizationInterceptor),
+        this.injector.get(LoaderInterceptor)
       ];
     }
 
     // Configure default Interceptors that can't be disabled here
     this.interceptors = [];
+  }
+
+  disableApiPrefix(): HttpClient {
+    return this.removeInterceptor(ApiPrefixInterceptor);
+  }
+
+  enableSSOInterceptor(): HttpClient {
+    return this.addInterceptor(this.injector.get(SSOPrefixInterceptor));
+  }
+
+  disableLoader(): HttpClient {
+    return this.removeInterceptor(LoaderInterceptor);
   }
 
   // Override the original method to wire interceptors when triggering the request.
