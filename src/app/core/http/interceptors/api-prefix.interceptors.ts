@@ -7,7 +7,7 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class ApiPrefixInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler) {
-    req = req.clone({ url: 'http://your.custom.url/some-controller/' + req.url });
+    req = req.clone({ url: 'http://your.custom.url/' + req.url });
     return next.handle(req);
   }
 }

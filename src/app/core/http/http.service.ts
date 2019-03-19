@@ -6,6 +6,10 @@ import { AuthorizationInterceptor } from './interceptors/authorization.intercept
 import { LoaderInterceptor } from './interceptors/loader.interceptor';
 import { SSOPrefixInterceptor } from './interceptors/sso.interceptor';
 
+interface HttpCustomParam {
+  [param: string]: string | string[];
+}
+
 // HttpClient is declared in a re-exported module, so we have to extend the original module to make it work properly
 // (see https://github.com/Microsoft/TypeScript/issues/13897)
 declare module '@angular/common/http/src/client' {
@@ -30,7 +34,13 @@ declare module '@angular/common/http/src/client' {
      */
     disableLoaderInterceptor(): HttpClient;
 
+    /**
+     * Change url of controller
+     * @param url
+     */
     setControllerUrl(url): HttpClient;
+
+    getWithParams(endpoint: string, params: HttpCustomParam): Observable<object>;
   }
 }
 
@@ -93,12 +103,17 @@ export class HttpService extends HttpClient {
   }
 
   setControllerUrl(url): HttpClient {
-    this.url = url;
+    this.url = url + '/';
     return this;
+  }
+
+  getWithParams(endpoint: string, params: HttpCustomParam) {
+    return this.get(endpoint, { params });
   }
 
   // Override the original method to wire interceptors when triggering the request.
   request(method?: any, url?: any, options?: any): any {
+    url = this.url + url;
     const interceptors = [...this.dynamicInterceptors, ...this.interceptors];
     const handler = interceptors.reduceRight((next, interceptor) => new HttpInterceptorHandler(next, interceptor), this.httpHandler);
     return new HttpClient(handler).request(method, url, options);

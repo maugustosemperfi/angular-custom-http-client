@@ -3,14 +3,14 @@ import { Injectable } from '@angular/core';
 import { HttpService } from '../httt-serivce.decorator';
 
 @Injectable()
-@HttpService('custom-controller')
+@HttpService('my-custom-controller')
 export class FeatureService {
 
   constructor(private httpClient: HttpClient) {}
 
   getSomething() {
     this.getHttpClient()
-      .get('dsa')
+      .get('custom-endpoint')
       .subscribe();
   }
 
